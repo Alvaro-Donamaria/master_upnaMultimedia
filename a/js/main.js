@@ -179,8 +179,9 @@ function onSelectStart( event ) {
                 } );
     
     let point = new THREE.Mesh( geo, mat );
-    scene.add( point );
     point.position.set(new THREE.Vector3(0,0,0));
+    scene.add( point );
+    
 
 }
 
