@@ -56,6 +56,18 @@ function init() {
     group = new THREE.Group();
     scene.add( group );
 
+    let geo = new THREE.BoxGeometry( 3, 3, 3 );
+    let mat = new THREE.MeshStandardMaterial( {
+                        color: Math.random() * 0xff00ff,
+                        roughness: 0.7,
+                        metalness: 0.0
+                } );
+    
+    let point = new THREE.Mesh( geo, mat );
+    point.position.set(new THREE.Vector3(10,10,10));
+    scene.add( point );
+    
+
     // const geometries = [
     //         new THREE.BoxGeometry( 0.2, 0.2, 0.2 ),
     //         new THREE.ConeGeometry( 0.2, 0.2, 64 ),
