@@ -64,11 +64,11 @@ function init() {
                 } );
     
     let point = new THREE.Mesh( geo, mat );
-    point.position.x = 10
-    point.position.y = 10
-    point.position.z = 10
+    point.position.x = 5
+    point.position.y = 5
+    point.position.z = 5
 
-    scene.add( point );
+    group.add( point );
     
 
     // const geometries = [
