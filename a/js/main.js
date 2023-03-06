@@ -56,7 +56,7 @@ function init() {
     group = new THREE.Group();
     scene.add( group );
 
-    let geo = new THREE.BoxGeometry( 3, 3, 3 );
+    let geo = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
     let mat = new THREE.MeshStandardMaterial( {
                         color: Math.random() * 0xff00ff,
                         roughness: 0.7,
@@ -64,9 +64,9 @@ function init() {
                 } );
     
     let point = new THREE.Mesh( geo, mat );
-    point.position.x = 5
-    point.position.y = 5
-    point.position.z = 5
+    point.position.x = 1
+    point.position.y = 1
+    point.position.z = 1
 
     group.add( point );
     
