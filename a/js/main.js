@@ -171,16 +171,16 @@ function onSelectStart( event ) {
     //         controller.userData.selected = object;
 
     // }
-    let geo = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+    let geo = new THREE.BoxGeometry( 1, 1, 1 );
     let mat = new THREE.MeshStandardMaterial( {
-                        color: Math.random() * 0xffffff,
+                        color: Math.random() * 0xff00ff,
                         roughness: 0.7,
                         metalness: 0.0
                 } );
     
     let point = new THREE.Mesh( geo, mat );
     scene.add( point );
-    point.position.set(controller.position);
+    point.position.set(new THREE.Vector3(0,0,0));
 
 }
 
