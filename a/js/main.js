@@ -9,12 +9,15 @@ let camera, scene, renderer;
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
 
-let raycaster;
+let firstPoint = null;
+let secondPoint = null;
 
-const intersected = [];
-const tempMatrix = new THREE.Matrix4();
 
-let group;
+const pointGeometry = new THREE.SphereGeometry( 0.01, 32, 32 );
+const pointMaterial = new THREE.MeshStandardMaterial({
+    color: 0xff0000
+});
+
 
 init();
 animate();
@@ -53,62 +56,6 @@ function init() {
     light.shadow.mapSize.set( 4096, 4096 );
     scene.add( light );
 
-    group = new THREE.Group();
-    scene.add( group );
-
-    let geo = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
-    let mat = new THREE.MeshStandardMaterial( {
-                        color: Math.random() * 0xff00ff,
-                        roughness: 0.7,
-                        metalness: 0.0
-                } );
-    
-    let point = new THREE.Mesh( geo, mat );
-    point.position.x = 1
-    point.position.y = 1
-    point.position.z = 1
-
-    group.add( point );
-    
-
-    // const geometries = [
-    //         new THREE.BoxGeometry( 0.2, 0.2, 0.2 ),
-    //         new THREE.ConeGeometry( 0.2, 0.2, 64 ),
-    //         new THREE.CylinderGeometry( 0.2, 0.2, 0.2, 64 ),
-    //         new THREE.IcosahedronGeometry( 0.2, 8 ),
-    //         new THREE.TorusGeometry( 0.2, 0.04, 64, 32 )
-    // ];
-
-    // for ( let i = 0; i < 50; i ++ ) {
-
-    //         const geometry = geometries[ Math.floor( Math.random() * geometries.length ) ];
-    //         const material = new THREE.MeshStandardMaterial( {
-    //                 color: Math.random() * 0xffffff,
-    //                 roughness: 0.7,
-    //                 metalness: 0.0
-    //         } );
-
-    //         const object = new THREE.Mesh( geometry, material );
-
-    //         object.position.x = Math.random() * 4 - 2;
-    //         object.position.y = Math.random() * 2;
-    //         object.position.z = Math.random() * 4 - 2;
-
-    //         object.rotation.x = Math.random() * 2 * Math.PI;
-    //         object.rotation.y = Math.random() * 2 * Math.PI;
-    //         object.rotation.z = Math.random() * 2 * Math.PI;
-
-    //         object.scale.setScalar( Math.random() + 0.5 );
-
-    //         object.castShadow = true;
-    //         object.receiveShadow = true;
-
-    //         group.add( object );
-
-    // }
-
-    //
-
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -123,12 +70,10 @@ function init() {
 
     controller1 = renderer.xr.getController( 0 );
     controller1.addEventListener( 'selectstart', onSelectStart );
-    controller1.addEventListener( 'selectend', onSelectEnd );
     scene.add( controller1 );
 
     controller2 = renderer.xr.getController( 1 );
     controller2.addEventListener( 'selectstart', onSelectStart );
-    controller2.addEventListener( 'selectend', onSelectEnd );
     scene.add( controller2 );
 
     const controllerModelFactory = new XRControllerModelFactory();
@@ -140,21 +85,6 @@ function init() {
     controllerGrip2 = renderer.xr.getControllerGrip( 1 );
     controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
     scene.add( controllerGrip2 );
-
-    //
-
-    const geometry = new THREE.BufferGeometry().setFromPoints( [ new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, - 1 ) ] );
-
-    const line = new THREE.Line( geometry );
-    line.name = 'line';
-    line.scale.z = 5;
-
-    controller1.add( line.clone() );
-    controller2.add( line.clone() );
-
-    raycaster = new THREE.Raycaster();
-
-    //
 
     window.addEventListener( 'resize', onWindowResize );
 
@@ -172,114 +102,56 @@ function onWindowResize() {
 function onSelectStart( event ) {
 
     const controller = event.target;
-
-    // const intersections = getIntersections( controller );
-
-    // if ( intersections.length > 0 ) {
-
-    //         const intersection = intersections[ 0 ];
-
-    //         const object = intersection.object;
-    //         object.material.emissive.b = 1;
-    //         controller.attach( object );
-
-    //         controller.userData.selected = object;
-
-    // }
-    let geo = new THREE.BoxGeometry( 3, 3, 3 );
-    let mat = new THREE.MeshStandardMaterial( {
-                        color: Math.random() * 0xff00ff,
-                        roughness: 0.7,
-                        metalness: 0.0
-                } );
     
-    let point = new THREE.Mesh( geo, mat );
-    point.position.set(new THREE.Vector3(10,10,10));
-    scene.add( point );
-    
+    if (firstPoint === null) {
+        firstPoint = new THREE.Mesh( pointGeometry, pointMaterial );
+        firstPoint.position.x = controller.position.x;
+        firstPoint.position.y = controller.position.y;
+        firstPoint.position.z = controller.position.z;
 
-}
+        scene.add( firstPoint );
+    }else if (firstPoint !== null && secondPoint !== null){
+        scene.remove(firstPoint)
+        scene.remove(secondPoint)
+        secondPoint = null;
 
-function onSelectEnd( event ) {
+        firstPoint = new THREE.Mesh( pointGeometry, pointMaterial );
+        firstPoint.position.x = controller.position.x;
+        firstPoint.position.y = controller.position.y;
+        firstPoint.position.z = controller.position.z;
+        scene.add( firstPoint );
+    }else{
+        secondPoint = new THREE.Mesh( pointGeometry, pointMaterial );
+        secondPoint.position.x = controller.position.x;
+        secondPoint.position.y = controller.position.y;
+        secondPoint.position.z = controller.position.z;
+        scene.add( secondPoint );
+        
+        let firstPosition = firstPoint.position;
+        let secondPosition = secondPoint.position;
+        let boxX = secondPosition.x - firstPosition.x;
+        let boxY = secondPosition.y - firstPosition.y;
+        let boxZ = secondPosition.z - firstPosition.z;
 
-    const controller = event.target;
-
-    if ( controller.userData.selected !== undefined ) {
-
-            const object = controller.userData.selected;
-            object.material.emissive.b = 0;
-            group.attach( object );
-
-            controller.userData.selected = undefined;
-
+        const boxGeometry = new THREE.BoxGeometry( boxX, boxY, boxZ);
+        const boxMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ff00
+        });
+        const box = new THREE.Mesh( boxGeometry, boxMaterial );
+        box.position.x = firstPosition.x + (boxX/2);
+        box.position.y = firstPosition.y + (boxY/2);
+        box.position.z = firstPosition.z + (boxZ/2);
+        scene.add( box );
+        
     }
-
-
 }
-
-function getIntersections( controller ) {
-
-    tempMatrix.identity().extractRotation( controller.matrixWorld );
-
-    raycaster.ray.origin.setFromMatrixPosition( controller.matrixWorld );
-    raycaster.ray.direction.set( 0, 0, - 1 ).applyMatrix4( tempMatrix );
-
-    return raycaster.intersectObjects( group.children, false );
-
-}
-
-function intersectObjects( controller ) {
-
-    // Do not highlight when already selected
-
-    if ( controller.userData.selected !== undefined ) return;
-
-    const line = controller.getObjectByName( 'line' );
-    const intersections = getIntersections( controller );
-
-    if ( intersections.length > 0 ) {
-
-            const intersection = intersections[ 0 ];
-
-            const object = intersection.object;
-            object.material.emissive.r = 1;
-            intersected.push( object );
-
-            line.scale.z = intersection.distance;
-
-    } else {
-
-            line.scale.z = 5;
-
-    }
-
-}
-
-function cleanIntersected() {
-
-    while ( intersected.length ) {
-
-            const object = intersected.pop();
-            object.material.emissive.r = 0;
-
-    }
-
-}
-
-//
 
 function animate() {
 
     renderer.setAnimationLoop( render );
-
 }
 
 function render() {
-
-    cleanIntersected();
-
-    intersectObjects( controller1 );
-    intersectObjects( controller2 );
 
     renderer.render( scene, camera );
 
