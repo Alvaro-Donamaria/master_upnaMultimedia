@@ -64,7 +64,10 @@ function init() {
                 } );
     
     let point = new THREE.Mesh( geo, mat );
-    point.position.set(new THREE.Vector3(10,10,10));
+    point.position.x = 10
+    point.position.y = 10
+    point.position.z = 10
+
     scene.add( point );
     
 
